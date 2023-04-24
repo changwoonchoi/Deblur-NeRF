@@ -1,10 +1,9 @@
 num_gpu = 1
-expname = blurball1_full_woprior_wodepth
-basedir = /apdcephfs/private_leema/data/NeRF/logs_exp
-datadir = /apdcephfs/private_leema/data/NeRF/blurball
-tbdir = /apdcephfs/private_leema/data/NeRF/tensorboard_exp
+expname = blurball1_test
+basedir = /home/ccw/project/cloned_repos/Deblur-NeRF/logs/
+datadir = /home/ccw/project/cloned_repos/Deblur-NeRF/data/deblur_nerf/real_camera_motion_blur/blurball
+tbdir = /home/ccw/project/cloned_repos/Deblur-NeRF/logs
 dataset_type = llff
-
 factor = 4
 llffhold = 7
 
