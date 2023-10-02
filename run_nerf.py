@@ -7,6 +7,7 @@ from tensorboardX import SummaryWriter
 
 from NeRF import *
 from load_llff import load_llff_data
+from load_blender_video import load_blender_video_data
 from run_nerf_helpers import *
 from metrics import compute_img_metric
 
@@ -186,7 +187,7 @@ def config_parser():
                         default=.5, help='fraction of img taken for central crops')
     # dataset options
     parser.add_argument("--dataset_type", type=str, default='llff',
-                        help='options: llff / blender / deepvoxels')
+                        help='options: llff / blender / deepvoxels / blender_video')
     parser.add_argument("--testskip", type=int, default=8,
                         help='will load 1/N images from test/val sets, useful for large datasets like deepvoxels')
     ## deepvoxels flags
@@ -197,6 +198,17 @@ def config_parser():
                         help='set to render synthetic data on a white bkgd (always use for dvoxels)')
     parser.add_argument("--half_res", action='store_true',
                         help='load blender synthetic data at 400x400 instead of 800x800')
+    ## blender_video flags
+    parser.add_argument("--near", type=float, default=0.1,
+                        help='near clipping plane')
+    parser.add_argument("--far", type=float, default=25.0,
+                          help='far clipping plane')
+    parser.add_argument("--start_frame", type=int, default=0,
+                        help='video loading start frame')
+    parser.add_argument("--end_frame", type=int, default=1000,
+                        help='video loading end frame')
+    parser.add_argument("--autoexp", action='store_true')
+    parser.add_argument("--blur", action='store_true')
 
 
     ################# logging/saving options ##################
@@ -230,6 +242,10 @@ def train():
                                                                   spherify=args.spherify,
                                                                   path_epi=args.render_epi)
         hwf = poses[0, :3, -1]
+        H, W, focal = hwf
+        H, W = int(H), int(W)
+        hwf = [H, W, focal]
+
         poses = poses[:, :3, :4]
         print('Loaded llff', images.shape, render_poses.shape, hwf, args.datadir)
         if not isinstance(i_test, list):
@@ -251,6 +267,18 @@ def train():
             near = 0.
             far = 1.
         print('NEAR FAR', near, far)
+    elif args.dataset_type == 'blender_video':
+        # TODO: implement here
+        near, far = args.near, args.far
+        images, poses, hwf = load_blender_video_data(args)
+        H, W, focal = hwf
+
+        i_test = np.arange(args.llffhold // 2, images.shape[0], args.llffhold)
+        i_val = i_test
+        i_train = np.array([i for i in np.arange(int(images.shape[0])) if
+                            (i not in i_test and i not in i_val)])
+        print('NEAR FAR', near, far)
+        render_poses = np.array(poses[i_test])
     else:
         print('Unknown dataset type', args.dataset_type, 'exiting')
         return
@@ -260,9 +288,6 @@ def train():
     images_idx = np.arange(0, len(images))
 
     # Cast intrinsics to right types
-    H, W, focal = hwf
-    H, W = int(H), int(W)
-    hwf = [H, W, focal]
 
     if K is None:
         K = np.array([
@@ -617,19 +642,19 @@ def train():
 
                 test_mse = compute_img_metric(rgbs, target_rgb_ldr, 'mse')
                 test_psnr = compute_img_metric(rgbs, target_rgb_ldr, 'psnr')
-                test_ssim = compute_img_metric(rgbs, target_rgb_ldr, 'ssim')
-                test_lpips = compute_img_metric(rgbs, target_rgb_ldr, 'lpips')
-                if isinstance(test_lpips, torch.Tensor):
-                    test_lpips = test_lpips.item()
+                # test_ssim = compute_img_metric(rgbs, target_rgb_ldr, 'ssim')
+                # test_lpips = compute_img_metric(rgbs, target_rgb_ldr, 'lpips')
+                # if isinstance(test_lpips, torch.Tensor):
+                #     test_lpips = test_lpips.item()
 
                 tensorboard.add_scalar("Test MSE", test_mse, global_step)
                 tensorboard.add_scalar("Test PSNR", test_psnr, global_step)
-                tensorboard.add_scalar("Test SSIM", test_ssim, global_step)
-                tensorboard.add_scalar("Test LPIPS", test_lpips, global_step)
+                # tensorboard.add_scalar("Test SSIM", test_ssim, global_step)
+                # tensorboard.add_scalar("Test LPIPS", test_lpips, global_step)
 
             with open(test_metric_file, 'a') as outfile:
-                outfile.write(f"iter{i}/globalstep{global_step}: MSE:{test_mse:.8f} PSNR:{test_psnr:.8f}"
-                              f" SSIM:{test_ssim:.8f} LPIPS:{test_lpips:.8f}\n")
+                outfile.write(f"iter{i}/globalstep{global_step}: MSE:{test_mse:.8f} PSNR:{test_psnr:.8f}\n")
+                              # f" SSIM:{test_ssim:.8f} LPIPS:{test_lpips:.8f}\n")
 
             print('Saved test set')
 
