@@ -267,6 +267,7 @@ def train():
             near = 0.
             far = 1.
         print('NEAR FAR', near, far)
+        test_poses = poses
     elif args.dataset_type == 'blender_video':
         # TODO: implement here
         near, far = args.near, args.far
@@ -279,6 +280,7 @@ def train():
                             (i not in i_test and i not in i_val)])
         print('NEAR FAR', near, far)
         render_poses = np.array(poses[i_test])
+        test_poses = render_poses
     else:
         print('Unknown dataset type', args.dataset_type, 'exiting')
         return
@@ -515,6 +517,7 @@ def train():
     imagesf = torch.tensor(imagesf).cuda()
 
     poses = torch.tensor(poses).cuda()
+    test_poses = torch.tensor(test_poses).cuda()
     train_datas = {k: torch.tensor(v).cuda() for k, v in train_datas.items()}
 
     N_iters = args.N_iters + 1
@@ -621,12 +624,12 @@ def train():
             testsavedir = os.path.join(basedir, expname, 'testset_{:06d}'.format(i))
             os.makedirs(testsavedir, exist_ok=True)
             print('test poses shape', poses.shape)
-            dummy_num = ((len(poses) - 1) // args.num_gpu + 1) * args.num_gpu - len(poses)
-            dummy_poses = torch.eye(poses.shape[1], poses.shape[2]).unsqueeze(0).expand(dummy_num, poses.shape[1], poses.shape[2]).type_as(render_poses)
+            dummy_num = ((len(test_poses) - 1) // args.num_gpu + 1) * args.num_gpu - len(test_poses)
+            dummy_poses = torch.eye(test_poses.shape[1], test_poses.shape[2]).unsqueeze(0).expand(dummy_num, test_poses.shape[1], test_poses.shape[2]).type_as(render_poses)
             print(f"Append {dummy_num} # of poses to fill all the GPUs")
             with torch.no_grad():
                 nerf.eval()
-                rgbs, _ = nerf(H, W, K, args.chunk, poses=torch.cat([poses, dummy_poses], dim=0).cuda(),
+                rgbs, _ = nerf(H, W, K, args.chunk, poses=torch.cat([test_poses, dummy_poses], dim=0).cuda(),
                                render_kwargs=render_kwargs_test)
                 rgbs = rgbs[:len(rgbs) - dummy_num]
                 rgbs_save = rgbs  # (rgbs - rgbs.min()) / (rgbs.max() - rgbs.min())
