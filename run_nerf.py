@@ -640,8 +640,13 @@ def train():
                     imageio.imwrite(filename, rgb8)
 
                 # evaluation
-                rgbs = rgbs[i_test]
-                target_rgb_ldr = imagesf[i_test]
+                if args.dataset_type == 'llff':
+                    rgbs = rgbs[i_test]
+                    target_rgb_ldr = imagesf[i_test]
+                elif args.dataset_type == 'blender_video':
+                    target_rgb_ldr = imagesf[i_test]
+                else:
+                    raise NotImplementedError
 
                 test_mse = compute_img_metric(rgbs, target_rgb_ldr, 'mse')
                 test_psnr = compute_img_metric(rgbs, target_rgb_ldr, 'psnr')
