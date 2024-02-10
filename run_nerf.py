@@ -658,6 +658,8 @@ def train():
                     target_rgb_ldr = imagesf[i_test]
                 elif args.dataset_type == 'blender_video':
                     target_rgb_ldr = imagesf[i_test]
+                elif args.dataset_type == "droid_slam":
+                    target_rgb_ldr = imagesf[i_test]
                 else:
                     raise NotImplementedError
 
