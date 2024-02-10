@@ -7,7 +7,8 @@ from tensorboardX import SummaryWriter
 
 from NeRF import *
 from load_llff import load_llff_data
-from load_blender_video import load_blender_video_data
+# from load_blender_video import load_blender_video_data
+from load_droid_slam import load_droid_slam_data
 from run_nerf_helpers import *
 from metrics import compute_img_metric
 
@@ -269,7 +270,8 @@ def train():
         print('NEAR FAR', near, far)
         test_poses = poses
     elif args.dataset_type == 'blender_video':
-        # TODO: implement here
+        raise ValueError("Blender video is temporally disabled")
+        """
         near, far = args.near, args.far
         images, poses, hwf = load_blender_video_data(args)
         H, W, focal = hwf
@@ -281,6 +283,17 @@ def train():
         print('NEAR FAR', near, far)
         render_poses = np.array(poses[i_test])
         test_poses = render_poses
+        """
+    elif args.dataset_type == 'droid_slam':
+        images, poses, hw, K, near, far = load_droid_slam_data(args)
+        H, W = hw
+        i_train = np.arange(images.shape[0])
+        i_test = i_train
+        i_val = i_test
+        print('NEAR FAR', near, far)
+        render_poses = np.array(poses[i_test])
+        test_poses = render_poses
+
     else:
         print('Unknown dataset type', args.dataset_type, 'exiting')
         return
