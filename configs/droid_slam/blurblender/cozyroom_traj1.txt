@@ -1,8 +1,8 @@
 num_gpu = 1
 expname = cozyroom_traj1
-basedir = /home/ccw/project/cloned_repos/Deblur-NeRF/logs/
+basedir = /home/ccw/project/cloned_repos/Deblur-NeRF/logs/droid_slam
 datadir = /home/ccw/project/cloned_repos/Deblur-NeRF/data/DroidSLAM/blurblender/cozyroom_traj1
-tbdir = /home/ccw/project/cloned_repos/Deblur-NeRF/logs
+tbdir = /home/ccw/project/cloned_repos/Deblur-NeRF/logs/droid_slam
 dataset_type = droid_slam 
 no_ndc
 
