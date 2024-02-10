@@ -1,21 +1,13 @@
 num_gpu = 1
-expname = cozyroom_traj1
+expname = italian-flat_traj5
 basedir = /home/ccw/project/cloned_repos/Deblur-NeRF/logs/
-datadir = /home/ccw/project/cloned_repos/Deblur-NeRF/data/blender_video/cozyroom_traj1
+datadir = /home/ccw/project/cloned_repos/Deblur-NeRF/data/DroidSLAM/blurblender/italian-flat_traj5
 tbdir = /home/ccw/project/cloned_repos/Deblur-NeRF/logs
-dataset_type = blender_video
+dataset_type = droid_slam 
 no_ndc
-autoexp
-blur
 
 factor = 1
 llffhold = 7
-
-start_frame = 23
-end_frame = 90
-
-near = 0.1
-far = 25
 
 N_rand = 1024
 N_samples = 64
