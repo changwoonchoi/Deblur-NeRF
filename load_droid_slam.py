@@ -3,6 +3,12 @@ import glob
 import numpy as np
 import torch
 
+
+def linear_to_srgb(img):
+    limit = 0.0031308
+    return np.where(img > limit, 1.055 * (img ** (1.0 / 2.4)) - 0.055, 12.92 * img)
+
+
 def load_droid_slam_data(args):
 
     focal_length = np.load(os.path.join(args.datadir, "focal_length.npy"))
@@ -47,6 +53,7 @@ def load_droid_slam_data(args):
     for image_path in image_paths:
         image = np.load(image_path)
         image = image[..., :-1]
+        image = linear_to_srgb(image)
         images.append(image)
     images = np.stack(images, axis=0)
     # images = torch.from_numpy(images)
