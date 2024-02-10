@@ -14,6 +14,7 @@ def load_droid_slam_data(args):
     image_paths = sorted(glob.glob(os.path.join(args.datadir, '*_input_image.npy')))
     pose_paths = sorted(glob.glob(os.path.join(args.datadir, '*_input_pose.npy')))
     depth_paths = sorted(glob.glob(os.path.join(args.datadir, '*_input_depth.npy')))  # Only for estimating near and far planes
+    depth_cov_paths = sorted(glob.glob(os.path.join(args.datadir, '*_depth_cov.npy')))
 
     frame_idx = []
     for _, path in enumerate(image_paths):
@@ -51,8 +52,8 @@ def load_droid_slam_data(args):
     # images = torch.from_numpy(images)
 
     depth_covs = []
-    for depth_path in depth_paths:
-        depth_cov = np.load(depth_path)
+    for depth_cov_path in depth_cov_paths:
+        depth_cov = np.load(depth_cov_path)
         depth_covs.append(depth_cov)
     depth_covs = np.stack(depth_covs, axis=0)
     depth_covs = torch.from_numpy(depth_covs)
